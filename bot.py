@@ -53,6 +53,12 @@ encouragements = [
 ]
 
 # Команды
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    text = update.message.text
+    if text == "Плохо" 
+         await bad(update, context)
+    
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "Доброе утро, Нина 🌞\nКак твои дела сегодня?\n\n"
