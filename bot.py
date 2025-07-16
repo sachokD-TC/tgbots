@@ -3,6 +3,7 @@ import random
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
 
+
 # Mapping Russian button labels to English command names
 button_map = {
     "Плохо": "bad",
@@ -172,4 +173,6 @@ app.add_handler(CommandHandler("joke", joke))
 app.add_handler(CommandHandler("morejoke", morejoke))
 app.add_handler(CommandHandler("bye", bye))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
-app.run_polling()
+port = int(os.environ.get("PORT", 5000))
+app.run(debug=True, host='0.0.0.0', port=port)
+
