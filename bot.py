@@ -2,6 +2,7 @@ import os
 import random
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
+const port = process.env.PORT || 4000 
 
 # Mapping Russian button labels to English command names
 button_map = {
@@ -173,3 +174,7 @@ app.add_handler(CommandHandler("morejoke", morejoke))
 app.add_handler(CommandHandler("bye", bye))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
 app.run_polling()
+
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`)
+})
