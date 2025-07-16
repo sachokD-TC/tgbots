@@ -92,7 +92,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=main_keyboard
     )
 
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     help_text = "Вот что я умею:\n" + "\n".join([f"/{eng} — {rus}" for rus, eng in button_map.items()])
     await update.message.reply_text(help_text)
 
@@ -162,7 +162,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # App setup
 app = ApplicationBuilder().token(os.getenv("BOT_TOKEN")).build()
 app.add_handler(CommandHandler("start", start))
-app.add_handler(CommandHandler("help", help_command))
+app.add_handler(CommandHandler("help", help))
 app.add_handler(CommandHandler("bad", bad))
 app.add_handler(CommandHandler("verybad", verybad))
 app.add_handler(CommandHandler("ok", ok))
