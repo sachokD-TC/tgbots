@@ -218,7 +218,8 @@ app.add_handler(CommandHandler("joke", joke))
 app.add_handler(CommandHandler("morejoke", morejoke))
 app.add_handler(CommandHandler("bye", bye))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
+backgroundTask()
 app.run_polling()
 
 
-backgroundTask()
+
