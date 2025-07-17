@@ -1,6 +1,7 @@
 
 import os
 import random
+import asyncio
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import (
     ApplicationBuilder,
@@ -192,6 +193,12 @@ app.add_handler(CommandHandler("morejoke", morejoke))
 app.add_handler(CommandHandler("bye", bye))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
 
-app_runner = web.AppRunner(app)
-await app_runner.setup() 
-srv = await loop.create_server(app_runner.server, '127.0.0.1', 9000)
+@app.on_startup
+async def on_startup(app):
+    await app.bot.set_webhook(f"{WEBHOOK_URL}/webhook")
+
+app.run_webhook(
+    listen="0.0.0.0",
+    port=PORT,
+    webhook_url=f"{WEBHOOK_URL}/webhook"
+)
