@@ -198,6 +198,8 @@ app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
 
 # Set up webhook
 async def main():
+    print(f"🚀 Starting bot on port {PORT}")
+    print(f"🔗 Setting webhook to: {WEBHOOK_URL}/webhook")
     await app.bot.set_webhook(url=f"{WEBHOOK_URL}/webhook")
     await app.run_webhook(
         listen="0.0.0.0",
