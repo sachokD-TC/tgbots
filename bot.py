@@ -176,9 +176,10 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await handler(update, context)
 
 # Запуск с Webhook
-TOKEN = "7585434820:AAFGrHOIDDGGKIBjYkriBgNBxvM_5DFBNPI"
-WEBHOOK_URL = "https://api.telegram.org/bot" + TOKEN +"/setWebhook?url=https://your-domain.com/your-webhook-path"
-PORT = int(80)
+TOKEN = os.getenv("BOT_TOKEN")
+WEBHOOK_URL = os.getenv("WEBHOOK_URL")
+PORT = int(os.getenv("PORT", 8443))
+
 
 
 app = ApplicationBuilder().token(TOKEN).build()
