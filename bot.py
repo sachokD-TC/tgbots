@@ -137,7 +137,6 @@ async def day(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=ReplyKeyboardMarkup([[button_labels["joke"]]], resize_keyboard=True)
     )
     await update.message.reply_text(random.choice(encouragements))
-    await update.message.reply_text(random.choice(encouragements))
 
 async def joke(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
@@ -201,5 +200,4 @@ print(f"🚀 Starting bot on port {PORT}")
 print(f"🔗 Setting webhook to: {WEBHOOK_URL}")
 
 app.run_polling()
-
 
