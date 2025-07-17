@@ -178,7 +178,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # Запуск с Webhook
 TOKEN = "7585434820:AAFGrHOIDDGGKIBjYkriBgNBxvM_5DFBNPI"
 WEBHOOK_URL = "https://api.telegram.org/bot" + TOKEN +"/setWebhook?url=https://your-domain.com/your-webhook-path"
-PORT = int(os.environ.get("PORT", 8443))
+PORT = int(80)
 
 
 app = ApplicationBuilder().token(TOKEN).build()
