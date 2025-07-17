@@ -2,6 +2,12 @@
 import os
 import random
 import asyncio
+from aiogram import Bot, Dispatcher
+from aiogram.enums import ParseMode
+from aiogram.webhook.aiohttp_server import setup_application
+from aiohttp import web
+
+
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import (
     ApplicationBuilder,
@@ -193,12 +199,18 @@ app.add_handler(CommandHandler("morejoke", morejoke))
 app.add_handler(CommandHandler("bye", bye))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
 
-@app.on_startup
-async def on_startup(app):
-    await app.bot.set_webhook(f"{WEBHOOK_URL}/webhook")
+# Set up webhook
+async def main():
+    await app.bot.set_webhook(url=f"{WEBHOOK_URL}/webhook")
+    await app.run_webhook(
+        listen="0.0.0.0",
+        port=PORT,
+        webhook_url=f"{WEBHOOK_URL}/webhook"
+    )
 
-app.run_webhook(
-    listen="0.0.0.0",
-    port=PORT,
-    webhook_url=f"{WEBHOOK_URL}/webhook"
-)
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(main())
+
+
+
