@@ -11,7 +11,7 @@ from telegram.ext import (
     filters,
 )
 
-def backgroundTask()
+def backgroundTask():
     import os
     import threading
     import time
