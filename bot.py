@@ -135,9 +135,9 @@ async def day(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Что-нибудь маленькое приятное запланировано?\n\n"
         "Я тебя слушаю внимательно. Просто напиши мне — я отвечу.",
         reply_markup=ReplyKeyboardMarkup([[button_labels["joke"]]], resize_keyboard=True)
-        await update.message.reply_text(random.choice(encouragements))
     )
-    
+    await update.message.reply_text(random.choice(encouragements))
+    await update.message.reply_text(random.choice(encouragements))
 
 async def joke(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
