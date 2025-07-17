@@ -20,6 +20,7 @@ def backgroundTask():
 
 # Background task
     def background_task():
+        app.run_polling()
         while True:
             print("Background task is running...")
             time.sleep(5)
@@ -221,7 +222,7 @@ app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
 
 if __name__ == "__main__":
     backgroundTask()
-    app.run_polling()
+
 
 
 
