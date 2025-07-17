@@ -135,8 +135,9 @@ async def day(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Что-нибудь маленькое приятное запланировано?\n\n"
         "Я тебя слушаю внимательно. Просто напиши мне — я отвечу.",
         reply_markup=ReplyKeyboardMarkup([[button_labels["joke"]]], resize_keyboard=True)
+        await update.message.reply_text(random.choice(encouragements))
     )
-    await update.message.reply_text(random.choice(encouragements))
+    
 
 async def joke(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
@@ -155,6 +156,7 @@ async def bye(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Ниночка, ты сегодня молодец уже просто потому, что встретила это утро.\n"
         "Пусть дальше будет легче, теплее и чуть-чуть светлее. Я здесь. Обнимаю мысленно.\n\n"
         "До завтра, моя хорошая 🤗"
+         reply_markup=none
     )
 
 # Обработка текстовых кнопок
@@ -197,6 +199,7 @@ app.add_handler(CommandHandler("bye", bye))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
 print(f"🚀 Starting bot on port {PORT}")
 print(f"🔗 Setting webhook to: {WEBHOOK_URL}")
+
 app.run_polling()
 
 
