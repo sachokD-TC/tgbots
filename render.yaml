@@ -1,11 +1,18 @@
+FROM python:3.11.1-slim
 
-services:
-  - type: web
-    name: telegram-bot
-    env: python
-    plan: free
-    buildCommand: pip install -r requirements.txt
-    startCommand: python bot.py
-    envVars:
-      - key: BOT_TOKEN
-        sync: false
+# Install pipenv
+RUN pip install pipenv
+
+# Set working directory
+WORKDIR /app
+
+# Copy files into container
+COPY bot.py .
+COPY Pipfile .
+COPY Pipfile.lock .
+
+# Install dependencies with pipenv
+RUN pipenv install --deploy
+
+# Run bot.py with pipenv
+CMD ["pipenv", "run", "python", "bot.py"]
