@@ -15,4 +15,4 @@ COPY Pipfile.lock .
 RUN pipenv install --deploy
 
 # Run bot.py with pipenv
-CMD ["pipenv", "run", "python", "background.py"]
+CMD ["pipenv", "run", "python", "backgroundTask.py"]
