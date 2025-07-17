@@ -195,29 +195,8 @@ app.add_handler(CommandHandler("joke", joke))
 app.add_handler(CommandHandler("morejoke", morejoke))
 app.add_handler(CommandHandler("bye", bye))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
-
-# Set up webhook
-async def main():
-    print(f"🚀 Starting bot on port {PORT}")
-    print(f"🔗 Setting webhook to: {WEBHOOK_URL}/webhook")
-    await app.bot.set_webhook(url=f"{WEBHOOK_URL}/webhook")
-    await app.run_webhook(
-        listen="0.0.0.0",
-        port=PORT,
-        webhook_url=f"{WEBHOOK_URL}/webhook"
-    )
-
-
-if __name__ == "__main__":
-    import asyncio
-
-    try:
-        loop = asyncio.get_running_loop()
-    except RuntimeError:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-
-    loop.create_task(main())
-    loop.run_forever()
+print(f"🚀 Starting bot on port {PORT}")
+print(f"🔗 Setting webhook to: {WEBHOOK_URL}")
+app.run_polling()
 
 
