@@ -2,11 +2,6 @@
 import os
 import random
 import asyncio
-from aiogram import Bot, Dispatcher
-from aiogram.enums import ParseMode
-from aiogram.webhook.aiohttp_server import setup_application
-from aiohttp import web
-
 
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import (
@@ -209,8 +204,4 @@ async def main():
     )
 
 if __name__ == "__main__":
-    import asyncio
     asyncio.run(main())
-
-
-
