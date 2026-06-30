@@ -4,78 +4,64 @@ import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
-
+import json
 import requests
 from bs4 import BeautifulSoup
-
 
 print("BOT STARTED")
 print("RENDER_INSTANCE_ID =", os.getenv("RENDER_INSTANCE_ID"))
 print("RENDER_SERVICE_ID =", os.getenv("RENDER_SERVICE_ID"))
 
 
-BASE_URL = "https://www.wg-gesucht.de/wohnungen-in-Erlangen.34.2.1.0.html"
+URL = "https://www.wg-gesucht.de/wohnungen-in-Erlangen.34.2.1.0.html"
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0"
 }
 
-def parse_wg_gesucht(max_price=800, min_rooms=1, area_keywords=None):
-    response = requests.get(BASE_URL, headers=HEADERS)
-    print("проверка работы")
-    print(response.status_code)
-    print(response.url)
-    print("проверка нужен ли нам конесент")
-    print("WG-Gesucht needs your consent" in response.text)
-    print(response.text[:10000])
 
-    soup = BeautifulSoup(response.text, "html.parser")
+def parse_wg_gesucht(max_price=1500, areas=None):
+    r = requests.get(URL, headers={"User-Agent": "Mozilla/5.0"})
+    soup = BeautifulSoup(r.text, "html.parser")
 
     results = []
 
-    offers = soup.select(".offer_list_item")
-
-    for offer in offers:
+    for script in soup.find_all("script", type="application/ld+json"):
         try:
-            title_tag = offer.select_one(".truncate_title")
-            price_tag = offer.select_one(".col-xs-3")
-            link_tag = offer.get("href")
+            data = json.loads(script.string)
+        except Exception:
+            continue
 
-            if not title_tag or not link_tag:
-                continue
+        if not isinstance(data, list):
+            continue
 
-            title = title_tag.text.strip()
-            link = "https://www.wg-gesucht.de" + link_tag
+        for block in data:
+            main = block.get("mainEntity", {})
+            items = main.get("itemListElement", [])
 
-            # цена
-            price_text = price_tag.text.strip() if price_tag else ""
-            price_num = ''.join(filter(str.isdigit, price_text))
-            price = int(price_num) if price_num else 0
+            for entry in items:
+                item = entry.get("item", {})
+                offers = item.get("offers", {})
+                address = item.get("mainEntity", {}).get("address", {})
 
-            # фильтр по цене
-            if price > max_price:
-                continue
+                price = float(offers.get("price", 0))
+                region = address.get("addressRegion", "").lower()
 
-            # фильтр по району
-            if area_keywords:
-                if not any(area.lower() in title.lower() for area in area_keywords):
+                if price > max_price:
                     continue
 
-            # фильтр по комнатам (простая эвристика)
-            if min_rooms > 1:
-                if "1" in title.lower():
+                if areas and not any(a.lower() in region for a in areas):
                     continue
 
-            results.append({
-                "title": title,
-                "price": price,
-                "link": link
-            })
-
-        except Exception as e:
-            print("Error:", e)
+                results.append({
+                    "title": item.get("name"),
+                    "price": price,
+                    "region": region,
+                    "url": item.get("url"),
+                })
 
     return results
+
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -103,7 +89,7 @@ dp = Dispatcher()
 @dp.message(Command("start"))
 async def start_handler(message: types.Message):
     await message.answer("Бот работает ✅")  
-    results = parse_wg_gesucht(1500, 1)
+    results = parse_wg_gesucht(1500)
     await message.answer(f"Найдено объявлений: {len(results)}")
     await message.answer(f"Результаты = {results}")
     await message.answer("Отработал ✅")  
