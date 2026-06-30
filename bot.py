@@ -120,7 +120,7 @@ async def start_handler(message: types.Message):
     await message.answer("Бот работает ✅")          
     results = parse_wg_gesucht()
     await message.answer(f"Найдено объявлений: {len(results)}")
-    for r in results[:3]:
+    for r in results:
         await message.answer(
             f"🏠 {r['title']}\n"
             f"💰 {r['price']} €\n"
