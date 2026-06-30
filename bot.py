@@ -13,7 +13,7 @@ print("RENDER_INSTANCE_ID =", os.getenv("RENDER_INSTANCE_ID"))
 print("RENDER_SERVICE_ID =", os.getenv("RENDER_SERVICE_ID"))
 
 
-URL = "https://www.wg-gesucht.de/wohnungen-in-Erlangen.34.2.1.0.html"
+URL = "https://www.wg-gesucht.de/wohnungen-in-Erlangen.34.2.1.0.html?categories%5B%5D=2&rent_types%5B%5D=2&rent_types%5B%5D=1&rent_types%5B%5D=3&rent_range=1307%2C1624&min_rent=1307&min_rent=1624&offer_filter=1&city_id=34&sort_order=0&noDeact=1&rMin=1307&rMax=1624"
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0"
