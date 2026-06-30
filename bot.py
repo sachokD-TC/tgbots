@@ -20,54 +20,6 @@ HEADERS = {
 }
 
 
-def debug_parse():
-    r = requests.get(URL, headers={"User-Agent": "Mozilla/5.0"})
-    soup = BeautifulSoup(r.text, "html.parser")
-
-    scripts = soup.find_all("script", type="application/ld+json")
-    print("SCRIPTS:", len(scripts))
-
-    total_items = 0
-
-    for i, script in enumerate(scripts):
-        text = script.get_text()
-        if not text:
-            print(f"Script {i}: EMPTY")
-            continue
-
-        try:
-            data = json.loads(text)
-        except Exception as e:
-            print(f"Script {i}: JSON ERROR", e)
-            continue
-
-        if isinstance(data, dict):
-            data = [data]
-
-        for block in data:
-            print("BLOCK TYPE:", block.get("@type"))
-
-            if block.get("@type") != "CollectionPage":
-                continue
-
-            main = block.get("mainEntity", {})
-            items = main.get("itemListElement", [])
-
-            print("FOUND ITEMS:", len(items))
-            total_items += len(items)
-
-            for it in items[:3]:
-                item = it.get("item", {})
-                print(
-                    " →",
-                    item.get("name"),
-                    item.get("url"),
-                    item.get("offers", {}).get("price"),
-                )
-
-    print("TOTAL FOUND:", total_items)
-
-
 def parse_wg_gesucht(max_price=99999, areas=None):
     r = requests.get(URL, headers={"User-Agent": "Mozilla/5.0"})
     soup = BeautifulSoup(r.text, "html.parser")
@@ -75,26 +27,28 @@ def parse_wg_gesucht(max_price=99999, areas=None):
     results = []
 
     scripts = soup.find_all("script", type="application/ld+json")
-    print("JSON-LD scripts found:", len(scripts))
+    print("JSON-LD scripts:", len(scripts))
 
     for script in scripts:
-        raw = script.get_text(strip=True)
-        if not raw:
+        text = script.get_text()
+        if not text:
             continue
 
-        try:
-            data = json.loads(raw)
-        except Exception as e:
-            print("JSON parse error:", e)
-            continue
+        # 🔥 ВАЖНО: ищем JSON с CollectionPage
+        matches = re.findall(
+            r'\{[^{}]*"@type"\s*:\s*"CollectionPage"[^{}]*\{.*?\}\s*\}',
+            text,
+            re.DOTALL
+        )
 
-        # нормализуем в список
-        if isinstance(data, dict):
-            data = [data]
+        for block_text in matches:
+            try:
+                data = json.loads(block_text)
+            except Exception as e:
+                print("BLOCK JSON ERROR:", e)
+                continue
 
-        for block in data:
-            main = block.get("mainEntity", {})
-            items = main.get("itemListElement", [])
+            items = data.get("mainEntity", {}).get("itemListElement", [])
 
             for entry in items:
                 item = entry.get("item", {})
@@ -116,9 +70,8 @@ def parse_wg_gesucht(max_price=99999, areas=None):
                 if price > max_price:
                     continue
 
-                if areas:
-                    if not any(a.lower() in region or a.lower() in title for a in areas):
-                        continue
+                if areas and not any(a.lower() in region or a.lower() in title for a in areas):
+                    continue
 
                 results.append({
                     "title": item.get("name"),
@@ -128,6 +81,7 @@ def parse_wg_gesucht(max_price=99999, areas=None):
                 })
 
     return results
+
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -154,8 +108,7 @@ dp = Dispatcher()
 # -----------------------
 @dp.message(Command("start"))
 async def start_handler(message: types.Message):
-    await message.answer("Бот работает ✅")      
-    debug_parse()
+    await message.answer("Бот работает ✅")          
     results = parse_wg_gesucht()
     await message.answer(f"Найдено объявлений: {len(results)}")
     for r in results[:3]:
