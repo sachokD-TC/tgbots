@@ -90,7 +90,7 @@ dp = Dispatcher()
 @dp.message(Command("start"))
 async def start_handler(message: types.Message):
     await message.answer("Бот работает ✅")
-    await print("Результаты", parse_wg_gesucht(1500, 1))
+    await message.answer("Результаты = ", parse_wg_gesucht(1500, 1))
 
 # -----------------------
 # обычное сообщение
