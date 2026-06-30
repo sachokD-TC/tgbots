@@ -29,6 +29,12 @@ def parse_wg_gesucht(max_price=99999, areas=None):
 
     scripts = soup.find_all("script", type="application/ld+json")
     print("JSON-LD scripts:", len(scripts))
+    
+
+    for idx, script in enumerate(scripts):
+        text = script.get_text()
+        print("\n===== SCRIPT", idx, "=====")
+        print(text[:500])
 
     for script in scripts:
         text = script.get_text()
