@@ -21,73 +21,53 @@ HEADERS = {
 }
 
 
-def parse_wg_gesucht(max_price=99999, areas=None):
-    r = requests.get(URL, headers={"User-Agent": "Mozilla/5.0"})
+
+def parse_wg_gesucht():
+    url = "https://www.wg-gesucht.de/wohnungen-in-Erlangen.34.2.1.0.html?categories%5B%5D=2&rent_types%5B%5D=2&rent_types%5B%5D=1&rent_types%5B%5D=3&rent_range=1307%2C1624&offer_filter=1&city_id=34&sort_order=0&noDeact=1&rMin=1307&rMax=1624"
+
+    r = requests.get(
+        url,
+        headers={"User-Agent": "Mozilla/5.0"}
+    )
+
     soup = BeautifulSoup(r.text, "html.parser")
+
+    scripts = soup.find_all("script", type="application/ld+json")
+
+    print("Scripts found:", len(scripts))
+
+    # именно SCRIPT 1
+    text = scripts[1].get_text().strip()
+
+    data = json.loads(text)
 
     results = []
 
-    scripts = soup.find_all("script", type="application/ld+json")
-    print("JSON-LD scripts:", len(scripts))
-    
+    for obj in data:
 
-    for idx, script in enumerate(scripts):
-        text = script.get_text()
-        print("\n===== SCRIPT", idx, "=====")
-        print(text[:500])
-
-    for script in scripts:
-        text = script.get_text()
-        if not text:
+        if obj.get("@type") != "CollectionPage":
             continue
 
-        # 🔥 ВАЖНО: ищем JSON с CollectionPage
-        matches = re.findall(
-            r'\{[^{}]*"@type"\s*:\s*"CollectionPage"[^{}]*\{.*?\}\s*\}',
-            text,
-            re.DOTALL
-        )
+        items = obj["mainEntity"]["itemListElement"]
 
-        for block_text in matches:
-            try:
-                data = json.loads(block_text)
-            except Exception as e:
-                print("BLOCK JSON ERROR:", e)
-                continue
+        print("ITEMS FOUND:", len(items))
 
-            items = data.get("mainEntity", {}).get("itemListElement", [])
+        for entry in items:
 
-            for entry in items:
-                item = entry.get("item", {})
-                offers = item.get("offers", {})
-                address = item.get("mainEntity", {}).get("address", {})
+            item = entry["item"]
 
-                try:
-                    price = float(offers.get("price", 0))
-                except:
-                    price = 0
-
-                region = (
-                    address.get("addressRegion", "")
-                    or address.get("addressLocality", "")
-                ).lower()
-
-                title = item.get("name", "").lower()
-
-                if price > max_price:
-                    continue
-
-                if areas and not any(a.lower() in region or a.lower() in title for a in areas):
-                    continue
-
-                results.append({
-                    "title": item.get("name"),
-                    "price": price,
-                    "region": region,
-                    "url": item.get("url"),
-                })
+            results.append({
+                "title": item.get("name"),
+                "price": item.get("offers", {}).get("price"),
+                "region": item.get("mainEntity", {})
+                             .get("address", {})
+                             .get("addressRegion"),
+                "url": item.get("url"),
+            })
 
     return results
+
+   
 
 
 class Handler(BaseHTTPRequestHandler):
