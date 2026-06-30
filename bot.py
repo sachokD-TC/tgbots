@@ -8,6 +8,12 @@ from aiogram.filters import Command
 import requests
 from bs4 import BeautifulSoup
 
+
+print("BOT STARTED")
+print("RENDER_INSTANCE_ID =", os.getenv("RENDER_INSTANCE_ID"))
+print("RENDER_SERVICE_ID =", os.getenv("RENDER_SERVICE_ID"))
+
+
 BASE_URL = "https://www.wg-gesucht.de/wohnungen-in-Erlangen.34.2.1.0.html"
 
 HEADERS = {
@@ -113,7 +119,6 @@ async def echo(message: types.Message):
 # запуск
 # -----------------------
 async def main():
-    print("BOT INSTANCE STARTED")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
