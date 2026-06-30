@@ -14,12 +14,9 @@ print("BOT STARTED")
 print("RENDER_INSTANCE_ID =", os.getenv("RENDER_INSTANCE_ID"))
 print("RENDER_SERVICE_ID =", os.getenv("RENDER_SERVICE_ID"))
 
-
 HEADERS = {
     "User-Agent": "Mozilla/5.0"
 }
-
-
 
 import requests
 import json
@@ -44,12 +41,12 @@ def extract_first_json_array(text: str):
         elif text[i] == "]":
             level -= 1
             if level == 0:
-                return text[start : i + 1]
+                return text[start: i + 1]
 
     return None
 
 
-def parse_wg_gesucht(min_price=None, max_price=None, min_rooms=None,areas=None):
+def parse_wg_gesucht(min_price=None, max_price=None, min_rooms=None, areas=None):
     r = requests.get(URL, headers={"User-Agent": "Mozilla/5.0"})
     soup = BeautifulSoup(r.text, "html.parser")
 
@@ -75,74 +72,73 @@ def parse_wg_gesucht(min_price=None, max_price=None, min_rooms=None,areas=None):
 
         items = obj["mainEntity"]["itemListElement"]
         print("ITEMS FOUND:", len(items))
+        for entry in items:
 
-        
-    for entry in items:
+            item = entry["item"]
 
-        item = entry["item"]
-
-        title = item.get("name", "")
-        url = item.get("url", "")
+            title = item.get("name", "")
+            url = item.get("url", "")
 
             try:
                 price = float(
-                item.get("offers", {}).get("price", 0)
+                    item.get("offers", {}).get("price", 0)
+                )
+            except:
+                price = 0
+
+            region = (
+                item.get("mainEntity", {})
+                .get("address", {})
+                .get("addressRegion", "")
             )
-        except:
-            price = 0
 
-        region = (
-            item.get("mainEntity", {})
-            .get("address", {})
-            .get("addressRegion", "")
-        )
+            # фильтр по цене
 
-    # фильтр по цене
-
-        if min_price and price < min_price:
-            continue
-
-        if max_price and price > max_price:
-            continue
-
-    # фильтр по району
-
-        if areas:
-            search_text = f"{title} {region}".lower()
-            if not any(
-                area.lower() in search_text
-                for area in areas
-            ):
+            if min_price and price < min_price:
                 continue
 
-    # фильтр по комнатам
+            if max_price and price > max_price:
+                continue
 
-        found_rooms = None
+            # фильтр по району
 
-        title_lower = title.lower()
+            if areas:
 
-        for i in range(1, 8):
+                search_text = f"{title} {region}".lower()
 
-            if f"{i}-zimmer" in title_lower:
-                found_rooms = i
-                break
-
-        if min_rooms:
-
-            if found_rooms is not None:
-
-                if found_rooms < min_rooms:
+                if not any(
+                        area.lower() in search_text
+                        for area in areas
+                ):
                     continue
 
-        results.append({
-            "title": title,
-            "price": price,
-            "region": region,
-            "url": url
-        })
+            # фильтр по комнатам
 
+            found_rooms = None
 
+            title_lower = title.lower()
+
+            for i in range(1, 8):
+
+                if f"{i}-zimmer" in title_lower:
+                    found_rooms = i
+                    break
+
+            if min_rooms:
+
+                if found_rooms is not None:
+
+                    if found_rooms < min_rooms:
+                        continue
+
+            results.append({
+                "title": title,
+                "price": price,
+                "region": region,
+                "url": url
+            })
     return results
+
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -150,11 +146,13 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(b"Bot is running")
 
+
 def run_server():
     import os
     port = int(os.environ.get("PORT", 10000))
     server = HTTPServer(("0.0.0.0", port), Handler)
     server.serve_forever()
+
 
 # запуск фейкового сервера
 threading.Thread(target=run_server).start()
@@ -164,13 +162,15 @@ API_TOKEN = os.getenv("BOT_TOKEN")
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
 
+
 # -----------------------
 # /start
 # -----------------------
 @dp.message(Command("start"))
 async def start_handler(message: types.Message):
-    await message.answer("Бот работает ✅")          
-    results = parse_wg_gesucht(min_price=1300, max_price=1600, min_rooms=2, areas=["bruck", "innenstadt", "alt erlangen"])
+    await message.answer("Бот работает ✅")
+    results = parse_wg_gesucht(min_price=1300, max_price=1600, min_rooms=2,
+                               areas=["bruck", "innenstadt", "alt erlangen"])
     await message.answer(f"Найдено объявлений: {len(results)}")
     for r in results:
         await message.answer(
@@ -178,15 +178,17 @@ async def start_handler(message: types.Message):
             f"💰 {r['price']} €\n"
             f"📍 {r['region']}\n"
             f"{r['url']}"
-        )    
-    
+        )
 
-# -----------------------
+    # -----------------------
+
+
 # обычное сообщение
 # -----------------------
 @dp.message()
 async def echo(message: types.Message):
     await message.answer(f"Ты написал: {message.text}")
+
 
 # -----------------------
 # запуск
@@ -194,6 +196,7 @@ async def echo(message: types.Message):
 async def main():
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
+
 
 if __name__ == "__main__":
     asyncio.run(main())
