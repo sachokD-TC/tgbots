@@ -113,6 +113,7 @@ async def echo(message: types.Message):
 # запуск
 # -----------------------
 async def main():
+    print("BOT INSTANCE STARTED")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
