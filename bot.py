@@ -20,11 +20,53 @@ HEADERS = {
 }
 
 
-import requests
-import json
-from bs4 import BeautifulSoup
+def debug_parse():
+    r = requests.get(URL, headers={"User-Agent": "Mozilla/5.0"})
+    soup = BeautifulSoup(r.text, "html.parser")
 
-URL = "https://www.wg-gesucht.de/wohnungen-in-Erlangen.34.2.1.0.html"
+    scripts = soup.find_all("script", type="application/ld+json")
+    print("SCRIPTS:", len(scripts))
+
+    total_items = 0
+
+    for i, script in enumerate(scripts):
+        text = script.get_text()
+        if not text:
+            print(f"Script {i}: EMPTY")
+            continue
+
+        try:
+            data = json.loads(text)
+        except Exception as e:
+            print(f"Script {i}: JSON ERROR", e)
+            continue
+
+        if isinstance(data, dict):
+            data = [data]
+
+        for block in data:
+            print("BLOCK TYPE:", block.get("@type"))
+
+            if block.get("@type") != "CollectionPage":
+                continue
+
+            main = block.get("mainEntity", {})
+            items = main.get("itemListElement", [])
+
+            print("FOUND ITEMS:", len(items))
+            total_items += len(items)
+
+            for it in items[:3]:
+                item = it.get("item", {})
+                print(
+                    " →",
+                    item.get("name"),
+                    item.get("url"),
+                    item.get("offers", {}).get("price"),
+                )
+
+    print("TOTAL FOUND:", total_items)
+
 
 def parse_wg_gesucht(max_price=99999, areas=None):
     r = requests.get(URL, headers={"User-Agent": "Mozilla/5.0"})
@@ -113,6 +155,7 @@ dp = Dispatcher()
 @dp.message(Command("start"))
 async def start_handler(message: types.Message):
     await message.answer("Бот работает ✅")      
+    debug_parse()
     results = parse_wg_gesucht()
     await message.answer(f"Найдено объявлений: {len(results)}")
     for r in results[:3]:
