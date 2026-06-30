@@ -26,7 +26,7 @@ import json
 from bs4 import BeautifulSoup
 from html import unescape
 
-URL = "https://www.wg-gesucht.de/wohnungen-in-Erlangen.34.2.1.0.html?categories%5B%5D=2&rent_types%5B%5D=2&rent_types%5B%5D=1&rent_types%5B%5D=3&rent_range=1307%2C1624&offer_filter=1&city_id=34&sort_order=0&noDeact=1&rMin=1307&rMax=1624"
+URL = "URL = "https://www.wg-gesucht.de/wohnungen-in-Erlangen.34.2.1.0.html"
 
 
 def extract_first_json_array(text: str):
