@@ -20,22 +20,33 @@ HEADERS = {
 }
 
 
-def parse_wg_gesucht(max_price=1500, areas=None):
+import requests
+import json
+from bs4 import BeautifulSoup
+
+URL = "https://www.wg-gesucht.de/wohnungen-in-Erlangen.34.2.1.0.html"
+
+def parse_wg_gesucht(max_price=99999, areas=None):
     r = requests.get(URL, headers={"User-Agent": "Mozilla/5.0"})
     soup = BeautifulSoup(r.text, "html.parser")
 
     results = []
 
     scripts = soup.find_all("script", type="application/ld+json")
-    print("JSON-LD scripts:", len(scripts))
+    print("JSON-LD scripts found:", len(scripts))
 
     for script in scripts:
-        try:
-            data = json.loads(script.string)
-        except Exception:
+        raw = script.get_text(strip=True)
+        if not raw:
             continue
 
-        # приводим ВСЁ к списку
+        try:
+            data = json.loads(raw)
+        except Exception as e:
+            print("JSON parse error:", e)
+            continue
+
+        # нормализуем в список
         if isinstance(data, dict):
             data = [data]
 
@@ -60,11 +71,9 @@ def parse_wg_gesucht(max_price=1500, areas=None):
 
                 title = item.get("name", "").lower()
 
-                # фильтр по цене
                 if price > max_price:
                     continue
 
-                # фильтр по району (ищем и в названии тоже!)
                 if areas:
                     if not any(a.lower() in region or a.lower() in title for a in areas):
                         continue
@@ -77,7 +86,6 @@ def parse_wg_gesucht(max_price=1500, areas=None):
                 })
 
     return results
-
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -105,7 +113,7 @@ dp = Dispatcher()
 @dp.message(Command("start"))
 async def start_handler(message: types.Message):
     await message.answer("Бот работает ✅")      
-    results = parse_wg_gesucht(max_price=1500,areas=["bruck", "altstadt"])
+    results = parse_wg_gesucht()
     await message.answer(f"Найдено объявлений: {len(results)}")
     for r in results[:3]:
         await message.answer(
