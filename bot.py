@@ -106,7 +106,7 @@ dp = Dispatcher()
 async def start_handler(message: types.Message):
     await message.answer("Бот работает ✅")      
     results = parse_wg_gesucht(max_price=1500,areas=["bruck", "altstadt"])
-    await message.answer(f"Найдено: {len(results)}")
+    await message.answer(f"Найдено объявлений: {len(results)}")
     for r in results[:3]:
         await message.answer(
             f"🏠 {r['title']}\n"
@@ -127,6 +127,7 @@ async def echo(message: types.Message):
 # запуск
 # -----------------------
 async def main():
+    await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
