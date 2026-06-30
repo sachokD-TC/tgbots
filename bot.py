@@ -88,11 +88,16 @@ dp = Dispatcher()
 # -----------------------
 @dp.message(Command("start"))
 async def start_handler(message: types.Message):
-    await message.answer("Бот работает ✅")  
-    results = parse_wg_gesucht(1500)
-    await message.answer(f"Найдено объявлений: {len(results)}")
-    await message.answer(f"Результаты = {results}")
-    await message.answer("Отработал ✅")  
+    await message.answer("Бот работает ✅")      
+    results = parse_wg_gesucht(max_price=1500,areas=["bruck", "altstadt"])
+    await message.answer(f"Найдено: {len(results)}")
+    for r in results[:3]:
+        await message.answer(
+            f"🏠 {r['title']}\n"
+            f"💰 {r['price']} €\n"
+            f"📍 {r['region']}\n"
+            f"{r['url']}"
+        )    
     
 
 # -----------------------
