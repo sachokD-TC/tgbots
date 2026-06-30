@@ -18,13 +18,7 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0"
 }
 
-import requests
-import json
-from bs4 import BeautifulSoup
-from html import unescape
-
 URL = "https://www.wg-gesucht.de/wohnungen-in-Erlangen.34.2.1.0.html"
-
 
 def extract_first_json_array(text: str):
     """
@@ -169,8 +163,7 @@ dp = Dispatcher()
 @dp.message(Command("start"))
 async def start_handler(message: types.Message):
     await message.answer("Бот работает ✅")
-    results = parse_wg_gesucht(min_price=1300, max_price=1600, min_rooms=2,
-                               areas=["bruck", "innenstadt", "alt erlangen"])
+    results = parse_wg_gesucht(min_price=1300, max_price=1600, min_rooms=1)
     await message.answer(f"Найдено объявлений: {len(results)}")
     for r in results:
         await message.answer(
@@ -180,9 +173,7 @@ async def start_handler(message: types.Message):
             f"{r['url']}"
         )
 
-    # -----------------------
-
-
+# -----------------------
 # обычное сообщение
 # -----------------------
 @dp.message()
