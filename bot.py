@@ -49,7 +49,7 @@ def extract_first_json_array(text: str):
     return None
 
 
-def parse_wg_gesucht():
+def parse_wg_gesucht(min_price=None, max_price=None, min_rooms=None,areas=None):
     r = requests.get(URL, headers={"User-Agent": "Mozilla/5.0"})
     soup = BeautifulSoup(r.text, "html.parser")
 
@@ -76,19 +76,71 @@ def parse_wg_gesucht():
         items = obj["mainEntity"]["itemListElement"]
         print("ITEMS FOUND:", len(items))
 
-        for entry in items:
-            item = entry["item"]
+        
+    for entry in items:
 
-            results.append({
-                "title": item.get("name"),
-                "price": item.get("offers", {}).get("price"),
-                "region": (
-                    item.get("mainEntity", {})
-                        .get("address", {})
-                        .get("addressRegion")
-                ),
-                "url": item.get("url"),
-            })
+        item = entry["item"]
+
+        title = item.get("name", "")
+        url = item.get("url", "")
+
+            try:
+                price = float(
+                item.get("offers", {}).get("price", 0)
+            )
+        except:
+            price = 0
+
+        region = (
+            item.get("mainEntity", {})
+            .get("address", {})
+            .get("addressRegion", "")
+        )
+
+    # фильтр по цене
+
+        if min_price and price < min_price:
+            continue
+
+        if max_price and price > max_price:
+            continue
+
+    # фильтр по району
+
+        if areas:
+            search_text = f"{title} {region}".lower()
+            if not any(
+                area.lower() in search_text
+                for area in areas
+            ):
+                continue
+
+    # фильтр по комнатам
+
+        found_rooms = None
+
+        title_lower = title.lower()
+
+        for i in range(1, 8):
+
+            if f"{i}-zimmer" in title_lower:
+                found_rooms = i
+                break
+
+        if min_rooms:
+
+            if found_rooms is not None:
+
+                if found_rooms < min_rooms:
+                    continue
+
+        results.append({
+            "title": title,
+            "price": price,
+            "region": region,
+            "url": url
+        })
+
 
     return results
 
@@ -118,7 +170,7 @@ dp = Dispatcher()
 @dp.message(Command("start"))
 async def start_handler(message: types.Message):
     await message.answer("Бот работает ✅")          
-    results = parse_wg_gesucht()
+    results = parse_wg_gesucht(min_price=1300, max_price=1600, min_rooms=2, areas=["bruck", "innenstadt", "alt erlangen"])
     await message.answer(f"Найдено объявлений: {len(results)}")
     for r in results:
         await message.answer(
