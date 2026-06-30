@@ -8,6 +8,7 @@ import json
 import requests
 import re
 from bs4 import BeautifulSoup
+from html import unescape
 
 print("BOT STARTED")
 print("RENDER_INSTANCE_ID =", os.getenv("RENDER_INSTANCE_ID"))
@@ -22,51 +23,45 @@ HEADERS = {
 
 
 
+URL = "https://www.wg-gesucht.de/wohnungen-in-Erlangen.34.2.1.0.html?categories%5B%5D=2&rent_types%5B%5D=2&rent_types%5B%5D=1&rent_types%5B%5D=3&rent_range=1307%2C1624&offer_filter=1&city_id=34&sort_order=0&noDeact=1&rMin=1307&rMax=1624"
+
 def parse_wg_gesucht():
-    url = "https://www.wg-gesucht.de/wohnungen-in-Erlangen.34.2.1.0.html?categories%5B%5D=2&rent_types%5B%5D=2&rent_types%5B%5D=1&rent_types%5B%5D=3&rent_range=1307%2C1624&offer_filter=1&city_id=34&sort_order=0&noDeact=1&rMin=1307&rMax=1624"
-
-    r = requests.get(
-        url,
-        headers={"User-Agent": "Mozilla/5.0"}
-    )
-
+    r = requests.get(URL, headers={"User-Agent": "Mozilla/5.0"})
     soup = BeautifulSoup(r.text, "html.parser")
 
     scripts = soup.find_all("script", type="application/ld+json")
-
-    print("Scripts found:", len(scripts))
-
-    # именно SCRIPT 1
-    text = scripts[1].get_text().strip()
-
-    data = json.loads(text)
+    print("JSON-LD scripts:", len(scripts))
 
     results = []
 
-    for obj in data:
+    # SCRIPT 1 — тот самый, где Product + CollectionPage
+    text = scripts[1].get_text()
+    text = unescape(text).strip()   # 🔥 ВАЖНО
 
+    data = json.loads(text)         # ✅ теперь парсится
+
+    for obj in data:
         if obj.get("@type") != "CollectionPage":
             continue
 
         items = obj["mainEntity"]["itemListElement"]
-
         print("ITEMS FOUND:", len(items))
 
         for entry in items:
-
             item = entry["item"]
 
             results.append({
                 "title": item.get("name"),
                 "price": item.get("offers", {}).get("price"),
-                "region": item.get("mainEntity", {})
-                             .get("address", {})
-                             .get("addressRegion"),
+                "region": (
+                    item.get("mainEntity", {})
+                        .get("address", {})
+                        .get("addressRegion")
+                ),
                 "url": item.get("url"),
             })
 
     return results
-
    
 
 
