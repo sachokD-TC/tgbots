@@ -16,6 +16,11 @@ HEADERS = {
 
 def parse_wg_gesucht(max_price=800, min_rooms=1, area_keywords=None):
     response = requests.get(BASE_URL, headers=HEADERS)
+    print("проверка работы")
+    print(response.status_code)
+    print(response.url)
+    print(response.text[:1000])
+
     soup = BeautifulSoup(response.text, "html.parser")
 
     results = []
