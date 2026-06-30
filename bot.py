@@ -163,7 +163,7 @@ dp = Dispatcher()
 @dp.message(Command("start"))
 async def start_handler(message: types.Message):
     await message.answer("Бот работает ✅")
-    results = parse_wg_gesucht(min_price=1300, max_price=1600, min_rooms=1)
+    results = parse_wg_gesucht()
     await message.answer(f"Найдено объявлений: {len(results)}")
     for r in results:
         await message.answer(
