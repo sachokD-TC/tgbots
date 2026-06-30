@@ -26,14 +26,18 @@ def parse_wg_gesucht(max_price=1500, areas=None):
 
     results = []
 
-    for script in soup.find_all("script", type="application/ld+json"):
+    scripts = soup.find_all("script", type="application/ld+json")
+    print("JSON-LD scripts:", len(scripts))
+
+    for script in scripts:
         try:
             data = json.loads(script.string)
         except Exception:
             continue
 
-        if not isinstance(data, list):
-            continue
+        # приводим ВСЁ к списку
+        if isinstance(data, dict):
+            data = [data]
 
         for block in data:
             main = block.get("mainEntity", {})
@@ -44,14 +48,26 @@ def parse_wg_gesucht(max_price=1500, areas=None):
                 offers = item.get("offers", {})
                 address = item.get("mainEntity", {}).get("address", {})
 
-                price = float(offers.get("price", 0))
-                region = address.get("addressRegion", "").lower()
+                try:
+                    price = float(offers.get("price", 0))
+                except:
+                    price = 0
 
+                region = (
+                    address.get("addressRegion", "")
+                    or address.get("addressLocality", "")
+                ).lower()
+
+                title = item.get("name", "").lower()
+
+                # фильтр по цене
                 if price > max_price:
                     continue
 
-                if areas and not any(a.lower() in region for a in areas):
-                    continue
+                # фильтр по району (ищем и в названии тоже!)
+                if areas:
+                    if not any(a.lower() in region or a.lower() in title for a in areas):
+                        continue
 
                 results.append({
                     "title": item.get("name"),
