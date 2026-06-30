@@ -6,6 +6,7 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
 import json
 import requests
+import re
 from bs4 import BeautifulSoup
 
 print("BOT STARTED")
