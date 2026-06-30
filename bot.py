@@ -15,15 +15,39 @@ print("RENDER_INSTANCE_ID =", os.getenv("RENDER_INSTANCE_ID"))
 print("RENDER_SERVICE_ID =", os.getenv("RENDER_SERVICE_ID"))
 
 
-URL = "https://www.wg-gesucht.de/wohnungen-in-Erlangen.34.2.1.0.html?categories%5B%5D=2&rent_types%5B%5D=2&rent_types%5B%5D=1&rent_types%5B%5D=3&rent_range=1307%2C1624&min_rent=1307&min_rent=1624&offer_filter=1&city_id=34&sort_order=0&noDeact=1&rMin=1307&rMax=1624"
-
 HEADERS = {
     "User-Agent": "Mozilla/5.0"
 }
 
 
 
+import requests
+import json
+from bs4 import BeautifulSoup
+from html import unescape
+
 URL = "https://www.wg-gesucht.de/wohnungen-in-Erlangen.34.2.1.0.html?categories%5B%5D=2&rent_types%5B%5D=2&rent_types%5B%5D=1&rent_types%5B%5D=3&rent_range=1307%2C1624&offer_filter=1&city_id=34&sort_order=0&noDeact=1&rMin=1307&rMax=1624"
+
+
+def extract_first_json_array(text: str):
+    """
+    Вырезает ПЕРВЫЙ JSON-массив [...] из строки
+    """
+    start = text.find("[")
+    if start == -1:
+        return None
+
+    level = 0
+    for i in range(start, len(text)):
+        if text[i] == "[":
+            level += 1
+        elif text[i] == "]":
+            level -= 1
+            if level == 0:
+                return text[start : i + 1]
+
+    return None
+
 
 def parse_wg_gesucht():
     r = requests.get(URL, headers={"User-Agent": "Mozilla/5.0"})
@@ -32,13 +56,18 @@ def parse_wg_gesucht():
     scripts = soup.find_all("script", type="application/ld+json")
     print("JSON-LD scripts:", len(scripts))
 
+    # SCRIPT 1 — нужный
+    raw = scripts[1].get_text()
+    raw = unescape(raw)
+
+    json_array_text = extract_first_json_array(raw)
+    if not json_array_text:
+        print("❌ JSON array not found")
+        return []
+
+    data = json.loads(json_array_text)  # ✅ БОЛЬШЕ НЕ ПАДАЕТ
+
     results = []
-
-    # SCRIPT 1 — тот самый, где Product + CollectionPage
-    text = scripts[1].get_text()
-    text = unescape(text).strip()   # 🔥 ВАЖНО
-
-    data = json.loads(text)         # ✅ теперь парсится
 
     for obj in data:
         if obj.get("@type") != "CollectionPage":
@@ -62,8 +91,6 @@ def parse_wg_gesucht():
             })
 
     return results
-   
-
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
