@@ -19,6 +19,8 @@ def parse_wg_gesucht(max_price=800, min_rooms=1, area_keywords=None):
     print("проверка работы")
     print(response.status_code)
     print(response.url)
+    print("проверка нужен ли нам конесент")
+    print("WG-Gesucht needs your consent" in response.text)
 
     soup = BeautifulSoup(response.text, "html.parser")
 
