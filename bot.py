@@ -19,7 +19,6 @@ def parse_wg_gesucht(max_price=800, min_rooms=1, area_keywords=None):
     print("проверка работы")
     print(response.status_code)
     print(response.url)
-    print(response.text[:1000])
 
     soup = BeautifulSoup(response.text, "html.parser")
 
@@ -96,7 +95,10 @@ dp = Dispatcher()
 async def start_handler(message: types.Message):
     await message.answer("Бот работает ✅")  
     results = parse_wg_gesucht(1500, 1)
+    await message.answer(f"Найдено объявлений: {len(results)}")
     await message.answer(f"Результаты = {results}")
+    await message.answer("Отработал ✅")  
+    
 
 # -----------------------
 # обычное сообщение
