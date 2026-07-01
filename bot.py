@@ -101,6 +101,10 @@ def parse_wg_gesucht(min_price=None, max_price=None, min_rooms=None, areas=None)
                 .get("addressRegion", "")
             )
 
+            print("TITLE =", repr(title))
+            print("REGION =", repr(region))
+            print("AREAS =", areas)
+
             # фильтр по цене
 
             if min_price and price < min_price:
@@ -178,7 +182,7 @@ dp = Dispatcher()
 @dp.message(Command("start"))
 async def start_handler(message: types.Message):
     await message.answer("Бот работает ✅")
-    results = parse_wg_gesucht(min_price=1300, max_price=1600, min_rooms=1, areas=["Bruck"])
+    results = parse_wg_gesucht(min_price=1300, max_price=1600, min_rooms=1, areas=["Alt-Erlangen"])
     await message.answer(f"Найдено объявлений: {len(results)}")
     for r in results:
         await message.answer(
