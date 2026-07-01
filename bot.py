@@ -9,6 +9,10 @@ import requests
 import re
 from bs4 import BeautifulSoup
 from html import unescape
+from aiogram.filters import Command
+from aiogram import types
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
 
 print("BOT STARTED")
 print("RENDER_INSTANCE_ID =", os.getenv("RENDER_INSTANCE_ID"))
@@ -18,7 +22,18 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0"
 }
 
+user_settings = {}
+
+class SearchSettings(StatesGroup):
+    min_price = State()
+    max_price = State()
+    min_rooms = State()
+    areas = State()
+
+
+
 URL = "https://www.wg-gesucht.de/wohnungen-in-Erlangen.34.2.1.0.html"
+
 
 def extract_first_json_array(text: str):
     """
@@ -163,7 +178,7 @@ dp = Dispatcher()
 @dp.message(Command("start"))
 async def start_handler(message: types.Message):
     await message.answer("Бот работает ✅")
-    results = parse_wg_gesucht(min_price=800, max_price=1000, min_rooms=2)
+    results = parse_wg_gesucht(min_price=1300, max_price=1600, min_rooms=1, areas=["Alt-Erlangen"])
     await message.answer(f"Найдено объявлений: {len(results)}")
     for r in results:
         await message.answer(
@@ -179,6 +194,89 @@ async def start_handler(message: types.Message):
 @dp.message()
 async def echo(message: types.Message):
     await message.answer(f"Ты написал: {message.text}")
+
+
+# -----------------------
+#  Settings
+# -----------------------
+@dp.message(Command("settings"))
+async def settings_start(message: types.Message, state: FSMContext):
+    await state.set_state(SearchSettings.min_price)
+    await message.answer("Введите минимальную цену:")
+
+
+# -----------------------
+#  min price
+# -----------------------
+@dp.message(SearchSettings.min_price)
+async def set_min_price(message: types.Message, state: FSMContext):
+
+    await state.update_data(
+        min_price=int(message.text)
+    )
+
+    await state.set_state(SearchSettings.max_price)
+
+    await message.answer(
+        "Введите максимальную цену:"
+    )
+
+# -----------------------
+#   max price
+# -----------------------
+@dp.message(SearchSettings.max_price)
+async def set_max_price(message: types.Message, state: FSMContext):
+
+    await state.update_data(
+        max_price=int(message.text)
+    )
+
+    await state.set_state(SearchSettings.min_rooms)
+
+    await message.answer(
+        "Введите минимальное количество комнат:"
+    )
+
+
+@dp.message(SearchSettings.min_rooms)
+async def set_min_rooms(message: types.Message, state: FSMContext):
+
+    await state.update_data(
+        min_rooms=int(message.text)
+    )
+
+    await state.set_state(SearchSettings.areas)
+
+    await message.answer(
+        "Введите районы через запятую\n\nНапример:\nBruck, Innenstadt, Altstadt"
+    )
+
+@dp.message(SearchSettings.areas)
+async def set_areas(message: types.Message, state: FSMContext):
+
+    data = await state.get_data()
+
+    areas = [
+        x.strip().lower()
+        for x in message.text.split(",")
+        if x.strip()
+    ]
+
+    user_settings[message.from_user.id] = {
+        "min_price": data["min_price"],
+        "max_price": data["max_price"],
+        "min_rooms": data["min_rooms"],
+        "areas": areas
+    }
+
+    await state.clear()
+
+    await message.answer(
+        f"✅ Настройки сохранены:\n\n"
+        f"💰 Цена: {data['min_price']} - {data['max_price']} €\n"
+        f"🏠 Комнаты: от {data['min_rooms']}\n"
+        f"📍 Районы: {', '.join(areas)}"
+    )
 
 
 # -----------------------
