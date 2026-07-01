@@ -111,6 +111,16 @@ def parse_wg_gesucht(min_price=None, max_price=None, min_rooms=None, areas=None)
 
             # фильтр по району
 
+            if areas:
+
+                search_text = f"{region}".lower()
+
+                if not any(
+                        area.lower() in search_text
+                        for area in areas
+                ):
+                    continue
+
             # фильтр по комнатам
 
             found_rooms = None
@@ -168,7 +178,7 @@ dp = Dispatcher()
 @dp.message(Command("start"))
 async def start_handler(message: types.Message):
     await message.answer("Бот работает ✅")
-    results = parse_wg_gesucht(min_price=1300, max_price=1600, min_rooms=1)
+    results = parse_wg_gesucht()
     await message.answer(f"Найдено объявлений: {len(results)}")
     for r in results:
         await message.answer(
