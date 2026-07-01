@@ -222,7 +222,7 @@ async def echo(message: types.Message):
 #  Settings
 # -----------------------
 @dp.message(Command("settings"))
-async def settings_start(message: types.Message, state: FSMContext):
+async def settings(message: types.Message, state: FSMContext):
     await state.set_state(SearchSettings.min_price)
     await message.answer("Введите минимальную цену:")
 
