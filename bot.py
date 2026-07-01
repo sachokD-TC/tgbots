@@ -111,14 +111,25 @@ def parse_wg_gesucht(min_price=None, max_price=None, min_rooms=None, areas=None)
 
             # фильтр по району
 
+            def normalize(text):
+                return str(text).lower().strip().replace("-", " ")
+
+            search_text = normalize(title) + " " + normalize(region)
+
             if areas:
+                matches = any(
+                    normalize(area) in search_text
+                    for area in areas
+                )
 
-                search_text = f"{region}".lower()
+                print(
+                    "SEARCH:",
+                    search_text,
+                    "MATCH:",
+                    matches
+                )
 
-                if not any(
-                        area.lower() in search_text
-                        for area in areas
-                ):
+                if not matches:
                     continue
 
             # фильтр по комнатам
