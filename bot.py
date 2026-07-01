@@ -184,36 +184,31 @@ async def start_handler(message: types.Message):
         "/search - выполнить поиск"
     )
 
-    @dp.message(Command("search"))
-    async def search(message: types.Message):
+@dp.message(Command("search"))
+async def search(message: types.Message):
 
-        settings = user_settings.get(message.from_user.id)
-
-        if not settings:
-            await message.answer(
-                "Сначала выполните /settings"
-            )
-            return
-
-        results = parse_wg_gesucht(
-            min_price=settings["min_price"],
-            max_price=settings["max_price"],
-            min_rooms=settings["min_rooms"],
-            areas=settings["areas"]
-        )
-
+    settings = user_settings.get(message.from_user.id)
+    if not settings:
         await message.answer(
-            f"Найдено объявлений: {len(results)}"
+            "Сначала выполните /settings"
         )
-
-        for r in results:
-            await message.answer(
-                f"🏠 {r['title']}\n"
-                f"💰 {r['price']} €\n"
-                f"📍 {r['region']}\n"
-                f"{r['url']}"
-            )
-
+        return
+    results = parse_wg_gesucht(
+        min_price=settings["min_price"],
+        max_price=settings["max_price"],
+        min_rooms=settings["min_rooms"],
+        areas=settings["areas"]
+    )
+    await message.answer(
+        f"Найдено объявлений: {len(results)}"
+    )
+    for r in results:
+        await message.answer(
+            f"🏠 {r['title']}\n"
+            f"💰 {r['price']} €\n"
+            f"📍 {r['region']}\n"
+            f"{r['url']}"
+        )
 
 # -----------------------
 # обычное сообщение
