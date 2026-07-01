@@ -99,11 +99,7 @@ def parse_wg_gesucht(min_price=None, max_price=None, min_rooms=None, areas=None)
                 item.get("mainEntity", {})
                 .get("address", {})
                 .get("addressRegion", "")
-            )
-
-            print("TITLE =", repr(title))
-            print("REGION =", repr(region))
-            print("AREAS =", areas)
+            )   
 
             # фильтр по цене
 
@@ -117,7 +113,7 @@ def parse_wg_gesucht(min_price=None, max_price=None, min_rooms=None, areas=None)
 
             if areas:
 
-                search_text = f"{title} {region}".lower()
+                search_text = f"{region}".lower()
 
                 if not any(
                         area.lower() in search_text
