@@ -177,16 +177,43 @@ dp = Dispatcher()
 # -----------------------
 @dp.message(Command("start"))
 async def start_handler(message: types.Message):
-    await message.answer("Бот работает ✅")
-    results = parse_wg_gesucht(min_price=800, max_price=1000, min_rooms=2, areas={"Alt-Erlangen"})
-    await message.answer(f"Найдено объявлений: {len(results)}")
-    for r in results:
-        await message.answer(
-            f"🏠 {r['title']}\n"
-            f"💰 {r['price']} €\n"
-            f"📍 {r['region']}\n"
-            f"{r['url']}"
+    await message.answer(
+        "🏠 Бот поиска квартир WG-Gesucht\n\n"
+        "Команды:\n"
+        "/settings - настроить поиск\n"
+        "/search - выполнить поиск"
+    )
+
+    @dp.message(Command("search"))
+    async def search(message: types.Message):
+
+        settings = user_settings.get(message.from_user.id)
+
+        if not settings:
+            await message.answer(
+                "Сначала выполните /settings"
+            )
+            return
+
+        results = parse_wg_gesucht(
+            min_price=settings["min_price"],
+            max_price=settings["max_price"],
+            min_rooms=settings["min_rooms"],
+            areas=settings["areas"]
         )
+
+        await message.answer(
+            f"Найдено объявлений: {len(results)}"
+        )
+
+        for r in results:
+            await message.answer(
+                f"🏠 {r['title']}\n"
+                f"💰 {r['price']} €\n"
+                f"📍 {r['region']}\n"
+                f"{r['url']}"
+            )
+
 
 # -----------------------
 # обычное сообщение
