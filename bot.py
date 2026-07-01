@@ -211,14 +211,6 @@ async def search(message: types.Message):
         )
 
 # -----------------------
-# обычное сообщение
-# -----------------------
-@dp.message()
-async def echo(message: types.Message):
-    await message.answer(f"Ты написал: {message.text}")
-
-
-# -----------------------
 #  Settings
 # -----------------------
 @dp.message(Command("settings"))
@@ -299,6 +291,14 @@ async def set_areas(message: types.Message, state: FSMContext):
         f"🏠 Комнаты: от {data['min_rooms']}\n"
         f"📍 Районы: {', '.join(areas)}"
     )
+
+# -----------------------
+# обычное сообщение
+# -----------------------
+@dp.message()
+async def echo(message: types.Message):
+    await message.answer(f"Ты написал: {message.text}")
+
 
 
 # -----------------------
